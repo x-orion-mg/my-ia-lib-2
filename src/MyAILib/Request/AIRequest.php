@@ -4,24 +4,64 @@ declare(strict_types=1);
 
 namespace MyAILib\Request;
 
-final class AIRequest
+use MyAILib\Message\Message;
+use MyAILib\Message\MessageRole;
+
+final readonly class AIRequest
 {
+    /**
+     * @param Message[] $messages
+     */
     public function __construct(
-        private readonly string $prompt,
-        private readonly array $options = [],
+        private array $messages = [],
+        private array $options = [],
     ) {
-        if (trim($prompt) === '') {
-            throw new \InvalidArgumentException('Prompt cannot be empty.');
-        }
+    }
+
+    public static function fromPrompt(
+        string $prompt,
+        array $options = []
+    ): self {
+        return new self(
+            messages: [
+                new Message(
+                    MessageRole::USER,
+                    $prompt
+                ),
+            ],
+            options: $options
+        );
+    }
+
+    /**
+     * @return Message[]
+     */
+    public function messages(): array
+    {
+        return $this->messages;
+    }
+
+    public function options(): array
+    {
+        return $this->options;
     }
 
     public function getPrompt(): string
     {
-        return $this->prompt;
+        foreach (array_reverse($this->messages) as $message) {
+            if ($message->role() === MessageRole::USER) {
+                return $message->content();
+            }
+        }
+
+        return '';
     }
 
-    public function getOptions(): array
+    public function toArray(): array
     {
-        return $this->options;
+        return array_map(
+            static fn (Message $message) => $message->toArray(),
+            $this->messages
+        );
     }
 }

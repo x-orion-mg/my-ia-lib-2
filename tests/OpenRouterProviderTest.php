@@ -5,6 +5,7 @@ declare(strict_types=1);
 
 namespace MyAILib\Tests;
 
+use JsonException;
 use MyAILib\Http\HttpResponse;
 use MyAILib\Provider\OpenRouter\OpenRouterProvider;
 use MyAILib\Request\AIRequest;
@@ -13,6 +14,9 @@ use PHPUnit\Framework\TestCase;
 
 final class OpenRouterProviderTest extends TestCase
 {
+    /**
+     * @throws JsonException
+     */
     public function testProviderReturnsResponse(): void
     {
         $http = new FakeHttpClient([
@@ -39,7 +43,7 @@ final class OpenRouterProviderTest extends TestCase
         ]);
 
         $response = $provider->ask(
-            new AIRequest('Bonjour')
+            AIRequest::fromPrompt('Bonjour')
         );
 
         $this->assertSame(
@@ -91,7 +95,7 @@ final class OpenRouterProviderTest extends TestCase
         ]);
 
         $response = $provider->ask(
-            new AIRequest('Bonjour')
+            AIRequest::fromPrompt('Bonjour')
         );
 
         $this->assertSame(

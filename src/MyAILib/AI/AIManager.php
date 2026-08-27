@@ -31,7 +31,7 @@ final readonly class AIManager implements AIInterface
 
     public function ask( string|AIRequest $request ): AIResponse {
         if (is_string($request)) {
-            $request = new AIRequest($request);
+            $request = AIRequest::fromPrompt($request);
         }
 
         return $this->provider->ask($request);

@@ -113,12 +113,7 @@ final class OpenRouterProvider implements ProviderInterface
     {
         $payload = [
             'model' => $model,
-            'messages' => [
-                [
-                    'role' => 'user',
-                    'content' => $request->getPrompt(),
-                ],
-            ],
+            'messages' => $request->toArray(),
         ];
 
         $headers = [
