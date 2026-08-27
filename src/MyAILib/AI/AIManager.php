@@ -25,11 +25,14 @@ final class AIManager implements AIInterface
     }
 
     public static function create(
-        string $providerSlug,
+        ?string $providerSlug,
         ProviderFactory $factory,
         array $options = [],
         ?SessionStoreInterface $sessionStore = null
     ): self {
+
+        $providerSlug = $factory->resolve($providerSlug);
+
         return new self(
             $factory->create(
                 $providerSlug,

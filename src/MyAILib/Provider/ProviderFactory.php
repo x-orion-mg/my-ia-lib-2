@@ -52,4 +52,27 @@ final class ProviderFactory
 
         return $provider;
     }
+    public function defaultProvider(): ?string
+    {
+        return $this->config?->defaultProvider();
+    }
+
+    public function resolve(?string $slug): string
+    {
+        if ($slug !== null && $slug !== '') {
+            return $slug;
+        }
+
+        $defaultProvider = $this->config?->defaultProvider();
+
+        if ($defaultProvider === null || $defaultProvider === '') {
+            throw new InvalidArgumentException(
+                'No AI provider was specified and no default provider is configured.'
+            );
+        }
+
+        return $defaultProvider;
+    }
+
+
 }

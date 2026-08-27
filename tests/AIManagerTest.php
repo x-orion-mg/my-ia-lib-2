@@ -6,6 +6,7 @@ declare(strict_types=1);
 namespace tests;
 
 use MyAILib\AI\AIManager;
+use MyAILib\Config\ConfigLoader;
 use MyAILib\Provider\ProviderFactory;
 use MyAILib\Provider\ProviderRegistry;
 use MyAILib\Tests\FakeProvider;
@@ -93,6 +94,37 @@ final class AIManagerTest extends TestCase
         $this->assertInstanceOf(
             FakeProvider::class,
             $provider
+        );
+    }
+    public function testCreateUsesDefaultProviderWhenSlugIsNull(): void
+    {
+        $registry = new ProviderRegistry();
+
+        $registry->register(
+            'fake',
+            FakeProvider::class
+        );
+
+        $config = ConfigLoader::fromArray([
+            'default_provider' => 'fake',
+            'providers' => [
+                'fake' => [],
+            ],
+        ]);
+
+        $factory = new ProviderFactory(
+            $registry,
+            $config
+        );
+
+        $ai = AIManager::create(
+            null,
+            $factory
+        );
+
+        self::assertInstanceOf(
+            FakeProvider::class,
+            $ai->getProvider()
         );
     }
 

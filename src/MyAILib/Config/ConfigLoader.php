@@ -9,12 +9,14 @@ use InvalidArgumentException;
 
 final class ConfigLoader
 {
-    public static function fromArray(array $config): AIConfig
+    public static function fromArray(array $data): AIConfig
     {
         return new AIConfig(
-            $config['providers'] ?? []
+            providers: $data['providers'] ?? [],
+            defaultProvider: $data['default_provider'] ?? null,
         );
     }
+
 
     public static function fromFile(string $file): AIConfig
     {

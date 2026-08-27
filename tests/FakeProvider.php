@@ -64,4 +64,9 @@ final class FakeProvider implements ProviderInterface
         return $this->options[$key] ?? null;
     }
 
+    public function options(): array
+    {
+        return $this->options;
+    }
+
 }
