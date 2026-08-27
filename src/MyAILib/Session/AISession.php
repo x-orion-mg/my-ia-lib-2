@@ -13,6 +13,8 @@ final class AISession implements SessionInterface
      * @var Message[]
      */
     private array $messages = [];
+    private ?string $systemPrompt = null;
+
 
     public function __construct(
         private readonly string $id
@@ -39,4 +41,15 @@ final class AISession implements SessionInterface
     {
         $this->messages = [];
     }
+
+    public function setSystemPrompt(string $prompt): void
+    {
+        $this->systemPrompt = $prompt;
+    }
+
+    public function getSystemPrompt(): ?string
+    {
+        return $this->systemPrompt;
+    }
+
 }

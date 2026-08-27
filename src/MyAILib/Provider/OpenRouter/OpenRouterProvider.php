@@ -11,6 +11,8 @@ use MyAILib\Exception\ProviderException;
 use MyAILib\Exception\RateLimitException;
 use MyAILib\Http\CurlHttpClient;
 use MyAILib\Http\HttpClientInterface;
+use MyAILib\Model\AIModel;
+use MyAILib\Provider\ProviderCapability;
 use MyAILib\Request\AIRequest;
 use MyAILib\Response\AIResponse;
 use MyAILib\Provider\ProviderInterface;
@@ -69,6 +71,9 @@ final class OpenRouterProvider implements ProviderInterface
         }
     }
 
+    /**
+     * @throws \Exception
+     */
     public function ask(AIRequest $request): AIResponse
     {
         $models = $this->getModelsToTry();
@@ -115,6 +120,17 @@ final class OpenRouterProvider implements ProviderInterface
             'model' => $model,
             'messages' => $request->toArray(),
         ];
+
+        $options = $request->options();
+
+        if ($options !== null) {
+            $payload = [
+                ...$payload,
+                ...$options->toArray(),
+            ];
+        }
+
+
 
         $headers = [
             'Content-Type' => 'application/json',
@@ -173,6 +189,8 @@ final class OpenRouterProvider implements ProviderInterface
             text: $text,
             provider: $this->getSlug(),
             model: $data['model'] ?? $model,
+            usage: $data['usage'] ?? null,
+            finishReason: $data['choices'][0]['finish_reason'] ?? null,
             metadata: $data
         );
     }
@@ -224,4 +242,33 @@ final class OpenRouterProvider implements ProviderInterface
             $statusCode
         );
     }
+
+    public function supports(
+        ProviderCapability $capability
+    ): bool {
+        return match ($capability) {
+            ProviderCapability::CHAT, ProviderCapability::JSON => true,
+            ProviderCapability::VISION, ProviderCapability::TOOLS, ProviderCapability::STREAMING => false,
+        };
+    }
+
+    public function getModels(): array
+    {
+        $models = $this->modelsList;
+
+        if ($models === [] && $this->model !== '') {
+            $models = [$this->model];
+        }
+
+        return array_map(
+            static fn (string $model) => new AIModel(
+                id: $model,
+                name: $model,
+            ),
+            $models
+        );
+    }
+
+
+
 }

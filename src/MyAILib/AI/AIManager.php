@@ -101,10 +101,23 @@ final class AIManager implements AIInterface
             return $request;
         }
 
+        $messages = [];
+
+        $systemPrompt = $this->session->getSystemPrompt();
+
+        if ($systemPrompt !== null) {
+            $messages[] = new Message(
+                MessageRole::SYSTEM,
+                $systemPrompt
+            );
+        }
+
         $messages = [
+            ...$messages,
             ...$this->session->messages(),
             ...$request->messages(),
         ];
+
 
         return new AIRequest(
             messages: $messages,
@@ -133,4 +146,23 @@ final class AIManager implements AIInterface
 
         $this->sessionStore?->save($this->session);
     }
+
+    public function setSystemPrompt(string $prompt): void
+    {
+        if ($this->session === null) {
+            throw new \RuntimeException(
+                'A session is required to set a system prompt.'
+            );
+        }
+
+        $this->session->setSystemPrompt($prompt);
+
+        $this->sessionStore?->save($this->session);
+    }
+
+    public function getSystemPrompt(): ?string
+    {
+        return $this->session?->getSystemPrompt();
+    }
+
 }

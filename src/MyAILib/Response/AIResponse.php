@@ -8,8 +8,10 @@ final class AIResponse
 {
     public function __construct(
         private readonly string $text,
-        private readonly ?string $provider = null,
+        private readonly string $provider,
         private readonly ?string $model = null,
+        private readonly ?array $usage = null,
+        private readonly ?string $finishReason = null,
         private readonly array $metadata = [],
     ) {
     }
@@ -19,7 +21,7 @@ final class AIResponse
         return $this->text;
     }
 
-    public function provider(): ?string
+    public function provider(): string
     {
         return $this->provider;
     }
@@ -27,6 +29,16 @@ final class AIResponse
     public function model(): ?string
     {
         return $this->model;
+    }
+
+    public function usage(): ?array
+    {
+        return $this->usage;
+    }
+
+    public function finishReason(): ?string
+    {
+        return $this->finishReason;
     }
 
     public function metadata(): array

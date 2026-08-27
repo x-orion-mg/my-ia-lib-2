@@ -60,4 +60,43 @@ final class AIManagerSessionTest extends TestCase
             $session->messages()[2]->content()
         );
     }
+
+    public function testSystemPromptIsIncludedInProviderContext(): void
+    {
+        $registry = new ProviderRegistry();
+
+        $registry->register(
+            'fake',
+            FakeProvider::class
+        );
+
+        $factory = new ProviderFactory($registry);
+
+        $store = new MemorySessionStore();
+
+        $ai = AIManager::create(
+            'fake',
+            $factory,
+            [],
+            $store
+        );
+
+        $ai->startSession('system-test');
+
+        $ai->setSystemPrompt(
+            'Tu es un expert en cuisine.'
+        );
+
+        $ai->ask('Donne-moi une recette.');
+
+        $session = $ai->getSession();
+
+        $this->assertNotNull($session);
+
+        $this->assertSame(
+            'Tu es un expert en cuisine.',
+            $session->getSystemPrompt()
+        );
+    }
+
 }

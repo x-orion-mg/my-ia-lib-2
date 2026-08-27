@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace MyAILib\Provider\OpenAI;
 
+use MyAILib\Provider\ProviderCapability;
 use MyAILib\Provider\ProviderInterface;
 use MyAILib\Request\AIRequest;
 use MyAILib\Response\AIResponse;
-use RuntimeException;
 use MyAILib\Http\CurlHttpClient;
 use MyAILib\Http\HttpClientInterface;
 use MyAILib\Exception\AuthenticationException;
@@ -165,5 +165,29 @@ final class OpenAIProvider implements ProviderInterface
         }
 
         return '';
+    }
+
+    public function supports(ProviderCapability $capability): bool
+    {
+        return match ($capability) {
+            ProviderCapability::CHAT, ProviderCapability::VISION => true,
+            ProviderCapability::TOOLS, ProviderCapability::JSON, ProviderCapability::STREAMING => false,
+        };
+    }
+
+    public function getModels(): array
+    {
+        return [
+            new \MyAILib\Model\AIModel(
+                id: 'gpt-5',
+                name: 'GPT-5',
+                capabilities: [ProviderCapability::CHAT->value]
+            ),
+            new \MyAILib\Model\AIModel(
+                id: 'gpt-4',
+                name: 'GPT-4',
+                capabilities: [ProviderCapability::CHAT->value]
+            ),
+        ];
     }
 }

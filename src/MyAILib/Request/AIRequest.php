@@ -6,21 +6,22 @@ namespace MyAILib\Request;
 
 use MyAILib\Message\Message;
 use MyAILib\Message\MessageRole;
+use MyAILib\Options\GenerationOptions;
 
-final readonly class AIRequest
+final class AIRequest
 {
     /**
      * @param Message[] $messages
      */
     public function __construct(
-        private array $messages = [],
-        private array $options = [],
+        private readonly array $messages = [],
+        private readonly ?GenerationOptions $options = null,
     ) {
     }
 
     public static function fromPrompt(
         string $prompt,
-        array $options = []
+        ?GenerationOptions $options = null
     ): self {
         return new self(
             messages: [
@@ -41,7 +42,7 @@ final readonly class AIRequest
         return $this->messages;
     }
 
-    public function options(): array
+    public function options(): ?GenerationOptions
     {
         return $this->options;
     }
