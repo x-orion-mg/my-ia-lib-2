@@ -60,7 +60,6 @@ final class OpenAIProvider implements ProviderInterface
         ];
 
         $response = $this->request(
-            '/responses',
             $payload
         );
 
@@ -83,7 +82,6 @@ final class OpenAIProvider implements ProviderInterface
     }
 
     private function request(
-        string $endpoint,
         array $payload
     ): array {
         $response = $this->httpClient->post(
