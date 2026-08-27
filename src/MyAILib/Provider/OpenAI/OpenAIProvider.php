@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace MyAILib\Provider\OpenAI;
 
+use MyAILib\Model\AIModel;
 use MyAILib\Provider\ProviderCapability;
 use MyAILib\Provider\ProviderInterface;
 use MyAILib\Request\AIRequest;
@@ -178,12 +179,12 @@ final class OpenAIProvider implements ProviderInterface
     public function getModels(): array
     {
         return [
-            new \MyAILib\Model\AIModel(
+            new AIModel(
                 id: 'gpt-5',
                 name: 'GPT-5',
                 capabilities: [ProviderCapability::CHAT->value]
             ),
-            new \MyAILib\Model\AIModel(
+            new AIModel(
                 id: 'gpt-4',
                 name: 'GPT-4',
                 capabilities: [ProviderCapability::CHAT->value]
