@@ -19,4 +19,9 @@ interface SessionInterface
     public function messages(): array;
 
     public function clear(): void;
+
+    public function setSystemPrompt(string $prompt): void;
+
+    public function getSystemPrompt(): ?string;
+
 }
