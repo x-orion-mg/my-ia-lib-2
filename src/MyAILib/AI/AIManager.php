@@ -1,0 +1,42 @@
+<?php
+
+declare(strict_types=1);
+
+namespace MyAILib\AI;
+
+use MyAILib\Provider\ProviderInterface;
+use MyAILib\Provider\ProviderRegistry;
+use MyAILib\Request\AIRequest;
+use MyAILib\Response\AIResponse;
+
+final readonly class AIManager implements AIInterface
+{
+    public function __construct(
+        private ProviderInterface $provider
+    ) {
+    }
+
+    public static function create(
+        string $providerSlug,
+        ProviderRegistry $registry,
+        array $options = []
+    ): self {
+        return new self(
+            $registry->create($providerSlug, $options)
+        );
+    }
+
+    public function ask(string|AIRequest $request): AIResponse
+    {
+        if (is_string($request)) {
+            $request = new AIRequest($request);
+        }
+
+        return $this->provider->ask($request);
+    }
+
+    public function getProvider(): ProviderInterface
+    {
+        return $this->provider;
+    }
+}

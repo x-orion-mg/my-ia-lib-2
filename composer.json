@@ -1,0 +1,27 @@
+{
+  "name": "x-orion-mg/my-ai-lib",
+  "description": "A unified PHP abstraction layer for AI providers.",
+  "type": "library",
+  "license": "MIT",
+  "require": {
+    "php": ">=8.2"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "^11.0"
+  },
+  "autoload": {
+    "psr-4": {
+      "MyAILib\\": "src/MyAILib/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "MyAILib\\Tests\\": "tests/"
+    }
+  },
+  "scripts": {
+    "test": "phpunit"
+  },
+  "minimum-stability": "stable",
+  "prefer-stable": true
+}
