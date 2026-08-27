@@ -6,11 +6,12 @@ declare(strict_types=1);
 namespace MyAILib\Http;
 
 use RuntimeException;
+use MyAILib\Exception\NetworkException;
 
-final class CurlHttpClient implements HttpClientInterface
+final readonly class CurlHttpClient implements HttpClientInterface
 {
     public function __construct(
-        private readonly int $timeout = 120
+        private int $timeout = 120
     )
     {
     }
@@ -24,7 +25,7 @@ final class CurlHttpClient implements HttpClientInterface
         $ch = curl_init($url);
 
         if ($ch === false) {
-            throw new RuntimeException(
+            throw new NetworkException(
                 'Unable to initialize cURL.'
             );
         }
@@ -53,9 +54,10 @@ final class CurlHttpClient implements HttpClientInterface
 
             curl_close($ch);
 
-            throw new RuntimeException(
+            throw new NetworkException(
                 'HTTP request failed: ' . $error
             );
+
         }
 
         $statusCode = curl_getinfo(

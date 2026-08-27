@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace MyAILib\AI;
 
+use MyAILib\Provider\ProviderFactory;
 use MyAILib\Provider\ProviderInterface;
-use MyAILib\Provider\ProviderRegistry;
 use MyAILib\Request\AIRequest;
 use MyAILib\Response\AIResponse;
 
@@ -18,16 +18,18 @@ final readonly class AIManager implements AIInterface
 
     public static function create(
         string $providerSlug,
-        ProviderRegistry $registry,
+        ProviderFactory $factory,
         array $options = []
     ): self {
         return new self(
-            $registry->create($providerSlug, $options)
+            $factory->create(
+                $providerSlug,
+                $options
+            )
         );
     }
 
-    public function ask(string|AIRequest $request): AIResponse
-    {
+    public function ask( string|AIRequest $request ): AIResponse {
         if (is_string($request)) {
             $request = new AIRequest($request);
         }

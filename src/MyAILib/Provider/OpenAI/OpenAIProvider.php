@@ -10,6 +10,11 @@ use MyAILib\Response\AIResponse;
 use RuntimeException;
 use MyAILib\Http\CurlHttpClient;
 use MyAILib\Http\HttpClientInterface;
+use MyAILib\Exception\AuthenticationException;
+use MyAILib\Exception\InvalidRequestException;
+use MyAILib\Exception\ProviderException;
+use MyAILib\Exception\RateLimitException;
+
 
 final class OpenAIProvider implements ProviderInterface
 {
@@ -46,9 +51,11 @@ final class OpenAIProvider implements ProviderInterface
         );
 
         if ($this->apiKey === '') {
-            throw new RuntimeException(
-                'OpenAI API key is missing.'
+            throw new AuthenticationException(
+                'OpenAI API key is missing.',
+                $this->getSlug()
             );
+
         }
     }
 
@@ -85,7 +92,7 @@ final class OpenAIProvider implements ProviderInterface
         array $payload
     ): array {
         $response = $this->httpClient->post(
-            $this->baseUrl . $endpoint,
+            $this->baseUrl . '/responses',
             [
                 'Content-Type' => 'application/json',
                 'Authorization' => 'Bearer ' . $this->apiKey,
@@ -99,23 +106,50 @@ final class OpenAIProvider implements ProviderInterface
         );
 
         if (!is_array($data)) {
-            throw new RuntimeException(
-                'Invalid JSON response from OpenAI.'
+            throw new ProviderException(
+                'Invalid JSON response from OpenAI.',
+                $this->getSlug()
             );
         }
 
+
         if (!$response->isSuccessful()) {
+            $statusCode = $response->statusCode();
+
             $message = $data['error']['message']
                 ?? 'Unknown OpenAI error.';
 
-            throw new RuntimeException(
-                sprintf(
-                    'OpenAI API error (%d): %s',
-                    $response->statusCode(),
-                    $message
-                )
+            if ($statusCode === 401 || $statusCode === 403) {
+                throw new AuthenticationException(
+                    $message,
+                    $this->getSlug(),
+                    $statusCode
+                );
+            }
+
+            if ($statusCode === 429) {
+                throw new RateLimitException(
+                    $message,
+                    $this->getSlug(),
+                    $statusCode
+                );
+            }
+
+            if ($statusCode >= 400 && $statusCode < 500) {
+                throw new InvalidRequestException(
+                    $message,
+                    $this->getSlug(),
+                    $statusCode
+                );
+            }
+
+            throw new ProviderException(
+                $message,
+                $this->getSlug(),
+                $statusCode
             );
         }
+
 
         return $data;
     }
