@@ -12,4 +12,9 @@ interface SessionStoreInterface
     public function save(SessionInterface $session): void;
 
     public function delete(string $id): void;
+
+    /**
+     * @return AISession[]
+     */
+    public function all(): array;
 }

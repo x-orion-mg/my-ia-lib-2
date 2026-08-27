@@ -32,4 +32,5 @@ final class FakeHttpClient implements HttpClientInterface
 
         return array_shift($this->responses);
     }
+
 }

@@ -25,4 +25,13 @@ final class MemorySessionStore implements SessionStoreInterface
     {
         unset($this->sessions[$id]);
     }
+
+    /**
+     * @return SessionInterface[]
+     */
+    public function all(): array
+    {
+        return array_values($this->sessions);
+    }
+
 }
