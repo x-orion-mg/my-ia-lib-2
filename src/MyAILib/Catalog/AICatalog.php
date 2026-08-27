@@ -4,16 +4,24 @@ declare(strict_types=1);
 
 namespace MyAILib\Catalog;
 
+use AllowDynamicProperties;
 use MyAILib\Model\AIModel;
 use MyAILib\Provider\ProviderCapability;
+use MyAILib\Provider\ProviderFactory;
 use MyAILib\Provider\ProviderInterface;
 use MyAILib\Provider\ProviderRegistry;
 
+#[AllowDynamicProperties]
 final class AICatalog
 {
+    private readonly ProviderFactory $factory;
+
     public function __construct(
-        private readonly ProviderRegistry $registry
+        ProviderRegistry $registry,
+        ProviderFactory $factory
     ) {
+        $this->registry = $registry;
+        $this->factory = $factory;
     }
 
     public function provider(string $slug): ProviderInterface
@@ -29,7 +37,7 @@ final class AICatalog
         $providers = [];
 
         foreach ($this->registry->all() as $slug => $class) {
-            $providers[] = $this->registry->create($slug);
+            $providers[] = $this->factory->create($slug);
         }
 
         return $providers;

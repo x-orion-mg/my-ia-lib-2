@@ -24,8 +24,6 @@ final class OpenAIProvider implements ProviderInterface
     private string $model = 'gpt-5';
 
     private string $baseUrl = 'https://api.openai.com/v1';
-
-    private array $options = [];
     private HttpClientInterface $httpClient;
 
     public function __construct(

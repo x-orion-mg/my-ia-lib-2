@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace MyAILib\Provider;
 
 use InvalidArgumentException;
+use MyAILib\Config\AIConfig;
 
 final class ProviderFactory
 {
@@ -13,9 +14,11 @@ final class ProviderFactory
      */
     public function __construct(
         private readonly ProviderRegistry $registry,
+        private readonly ?AIConfig $config = null,
         private readonly array $factories = []
     ) {
     }
+
 
     public function create(
         string $slug,
@@ -36,8 +39,15 @@ final class ProviderFactory
             $provider = $this->registry->create($slug);
         }
 
-        if ($options !== []) {
-            $provider->configure($options);
+        $configOptions = $this->config?->provider($slug) ?? [];
+
+        $finalOptions = array_replace(
+            $configOptions,
+            $options
+        );
+
+        if ($finalOptions !== []) {
+            $provider->configure($finalOptions);
         }
 
         return $provider;

@@ -59,5 +59,9 @@ final class FakeProvider implements ProviderInterface
             ),
         ];
     }
+    public function getConfiguredOption(string $key): mixed
+    {
+        return $this->options[$key] ?? null;
+    }
 
 }

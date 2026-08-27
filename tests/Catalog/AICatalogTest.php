@@ -10,6 +10,7 @@ use MyAILib\Provider\ProviderCapability;
 use MyAILib\Provider\ProviderRegistry;
 use MyAILib\Tests\FakeProvider;
 use PHPUnit\Framework\TestCase;
+use MyAILib\Provider\ProviderFactory;
 
 final class AICatalogTest extends TestCase
 {
@@ -22,8 +23,14 @@ final class AICatalogTest extends TestCase
             FakeProvider::class
         );
 
-        return new AICatalog($registry);
+        $factory = new ProviderFactory($registry);
+
+        return new AICatalog(
+            $registry,
+            $factory
+        );
     }
+
 
     public function testCanRetrieveProvider(): void
     {
