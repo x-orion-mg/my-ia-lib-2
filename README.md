@@ -1,773 +1,725 @@
 # My AI Lib
 
-> Une couche d'abstraction PHP pour utiliser plusieurs fournisseurs d'IA avec une API commune.
+My AI Lib est une librairie PHP permettant d'intégrer des modèles d'intelligence artificielle dans une application de manière simple, extensible et indépendante du provider utilisé.
 
-My AI Lib permet d'intégrer différents fournisseurs d'intelligence artificielle dans une application PHP sans coupler le code métier à un fournisseur particulier.
+L'objectif est de fournir une API commune permettant de communiquer avec différents providers d'IA tout en conservant une architecture extensible.
 
-L'objectif principal est simple :
+La librairie gère notamment :
 
-```php
-$response = $ai->ask('Bonjour, peux-tu m'aider ?');
-```
-Objectif
-My AI Lib a été conçue pour séparer :
+* les providers d'IA ;
+* la sélection du provider ;
+* la sélection du modèle ;
+* le fallback entre plusieurs modèles ;
+* les requêtes et réponses IA ;
+* les sessions de conversation ;
+* la persistance des conversations ;
+* l'historique des messages ;
+* les system prompts ;
+* les informations d'utilisation (usage) ;
+* le finish_reason ;
+* les métadonnées retournées par les providers ;
+* la création d'agents utilisant la librairie.
 
-le code métier ;
-le fournisseur d'IA ;
-le modèle utilisé ;
-la communication HTTP ;
-la gestion des sessions ;
-les options de génération ;
-la gestion des erreurs.
-L'application peut donc choisir son IA sans modifier le code métier.
+--------------------
 
-Exemple
-Le code métier peut rester :
+## Prérequis
 
-$response = $ai->ask('Analyse cette recette.');
+* PHP 8.2 ou supérieur
+* Composer
 
-Le provider peut être changé :
+------------------
 
-OpenAI
-OpenRouter
-Gemini
-Anthropic
-Mistral
-...
+## Installation
 
-sans que le code qui utilise l'IA ait besoin de connaître les détails de l'API du fournisseur.
+Depuis ton projet :
 
-✨ Fonctionnalités
-Abstraction des providers
-Tous les providers implémentent le même contrat :
-
-ProviderInterface
-
-Un provider doit notamment fournir :
-
-public function ask(AIRequest $request): AIResponse;
-
-public function configure(array $options): void;
-
-public function getName(): string;
-
-public function getSlug(): string;
-
-public function supports(ProviderCapability $capability): bool;
-
-public function getModels(): array;
-
-Cela permet d'ajouter de nouveaux providers sans modifier le cœur de la librairie.
-
-API commune
-L'interface principale est :
-
-AIInterface
-
-Elle expose :
-
-public function ask(string|AIRequest $request): AIResponse;
-
-On peut donc simplement faire :
-
-$response = $ai->ask('Bonjour');
-
-ou utiliser une requête structurée :
-
-$request = AIRequest::fromPrompt(
-'Bonjour'
-);
-
-$response = $ai->ask($request);
-
-Réponses normalisées
-Les providers retournent tous :
-
-AIResponse
-
-Une réponse contient notamment :
-
-$response->text();
-$response->provider();
-$response->model();
-$response->usage();
-$response->finishReason();
-$response->metadata();
-
-Le code métier n'a donc pas besoin de connaître le format de réponse spécifique à OpenAI, OpenRouter ou un autre fournisseur.
-
-Modèles
-Les modèles sont représentés par :
-
-AIModel
-
-Un modèle possède notamment :
-
-un identifiant ;
-un nom ;
-des capacités.
-Exemple :
-
-$model = new AIModel(
-id: 'gpt-5',
-name: 'GPT-5',
-capabilities: [
-'chat',
-]
-);
-
-Les providers peuvent exposer leurs modèles via :
-
-$models = $provider->getModels();
-
-Capacités
-Les capacités sont représentées par :
-
-ProviderCapability
-
-Les capacités actuellement définies sont :
-
-CHAT
-VISION
-TOOLS
-JSON
-STREAMING
-
-Un provider peut indiquer ce qu'il supporte :
-
-if (
-$provider->supports(
-ProviderCapability::VISION
-)
-) {
-// ...
-}
-
-Cette abstraction permettra notamment aux futurs agents de demander une capacité sans dépendre directement d'un provider.
-
-Sessions et historique
-My AI Lib peut gérer une session de conversation.
-
-$ai->startSession('conversation-123');
-
-Les messages sont alors conservés dans la session.
-
-Le système permet également de définir un system prompt :
-
-$ai->setSystemPrompt(
-'Tu es un assistant spécialisé en cuisine.'
-);
-
-L'historique et le system prompt sont ensuite intégrés automatiquement aux requêtes.
-
-Options de génération
-Les requêtes peuvent recevoir des options de génération.
-
-Exemple :
-
-$options = new GenerationOptions(
-temperature: 0.7,
-maxTokens: 500
-);
-
-$request = AIRequest::fromPrompt(
-'Explique-moi cette recette.',
-$options
-);
-
-$response = $ai->ask($request);
-
-Les options sont ensuite traduites par chaque provider vers le format attendu par son API.
-
-Fallback de modèles
-Certains providers peuvent essayer plusieurs modèles.
-
-OpenRouter supporte par exemple :
-
-[
-'models_list' => [
-'model-1',
-'model-2',
-'model-3',
-],
-]
-
-Si le premier modèle échoue avec une erreur provider compatible avec le fallback, le modèle suivant peut être essayé.
-
-Cela permet de construire des applications plus résilientes.
-
-Gestion des erreurs
-My AI Lib fournit des exceptions communes :
-
-AuthenticationException
-InvalidRequestException
-RateLimitException
-ProviderException
-
-Le code métier peut donc gérer les erreurs de manière indépendante du provider.
-
-Exemple :
-
-try {
-$response = $ai->ask($request);
-} catch (RateLimitException $e) {
-// Limite de requêtes atteinte
-} catch (AuthenticationException $e) {
-// Problème de clé API
-} catch (ProviderException $e) {
-// Erreur du provider
-}
-
-📦 Installation
-My AI Lib est une librairie Composer.
-
-composer require x-orion-mg/my-ai-lib
-
-Ou pour travailler directement avec le dépôt :
-
-git clone https://github.com/x-orion-mg/my-ia-lib-2.git
-
-cd my-ia-lib-2
-
-composer install
-
-Le projet nécessite PHP 8.2 ou supérieur.
-G
-GitHub
-
-🚀 Utilisation
-Créer un provider
-Le principe est de créer un ProviderRegistry, puis d'enregistrer les providers disponibles.
-
-use MyAILib\Provider\ProviderRegistry;
-use MyAILib\Provider\OpenAI\OpenAIProvider;
-
-$registry = new ProviderRegistry();
-
-$registry->register(
-'openai',
-OpenAIProvider::class
-);
-
-Créer une factory
-use MyAILib\Provider\ProviderFactory;
-
-$factory = new ProviderFactory(
-$registry
-);
-
-La ProviderFactory est responsable de la création des instances de providers.
-
-Créer une IA
-use MyAILib\AI\AIManager;
-
-$ai = AIManager::create(
-'openai',
-$factory,
-[
-'api_key' => getenv('OPENAI_API_KEY'),
-'model' => 'gpt-5',
-]
-);
-
-Poser une question
-$response = $ai->ask(
-'Explique-moi simplement la théorie de la relativité.'
-);
-
-echo $response->text();
-
-🔵 OpenAI
-Le provider OpenAI est disponible avec le slug :
-
-openai
-
-Exemple :
-
-$registry->register(
-'openai',
-OpenAIProvider::class
-);
-
-$ai = AIManager::create(
-'openai',
-$factory,
-[
-'api_key' => getenv('OPENAI_API_KEY'),
-'model' => 'gpt-5',
-]
-);
-
-$response = $ai->ask(
-'Bonjour OpenAI'
-);
-
-La clé API peut également être récupérée depuis :
-
-OPENAI_API_KEY
-
-Le provider OpenAI utilise l'abstraction HTTP de My AI Lib et peut recevoir un HttpClientInterface personnalisé.
-G
-GitHub
-
-🟣 OpenRouter
-Le provider OpenRouter utilise le slug :
-
-openrouter
-
-Exemple :
-
-use MyAILib\Provider\OpenRouter\OpenRouterProvider;
-
-$registry->register(
-'openrouter',
-OpenRouterProvider::class
-);
-
-$ai = AIManager::create(
-'openrouter',
-$factory,
-[
-'api_key' => getenv('OPENROUTER_API_KEY'),
-
-        'models_list' => [
-            'openai/gpt-5',
-            'model-2',
-            'model-3',
-        ],
-    ]
-);
-
-$response = $ai->ask(
-'Bonjour OpenRouter'
-);
-
-OpenRouter supporte notamment :
-
-'model' => 'model-name'
-
-ou :
-
-'models_list' => [
-'model-1',
-'model-2',
-'model-3',
-]
-
-Le provider construit également une AIResponse normalisée contenant notamment le modèle, l'utilisation et la raison de fin de génération.
-G
-GitHub
-
-🔧 Configuration
-La configuration peut être centralisée avec :
-
-use MyAILib\Config\AIConfig;
-use MyAILib\Config\ConfigLoader;
-
-Depuis un tableau
-$config = ConfigLoader::fromArray([
-'providers' => [
-'openai' => [
-'api_key' => getenv('OPENAI_API_KEY'),
-'model' => 'gpt-5',
-],
-
-        'openrouter' => [
-            'api_key' => getenv('OPENROUTER_API_KEY'),
-            'models_list' => [
-                'model-1',
-                'model-2',
-            ],
-        ],
-    ],
-]);
-
-Depuis un fichier PHP
-Créer par exemple :
-
-config/ai.php
-
-<?php
-
-return [
-    'providers' => [
-        'openai' => [
-            'api_key' => getenv('OPENAI_API_KEY'),
-            'model' => 'gpt-5',
-        ],
-
-        'openrouter' => [
-            'api_key' => getenv('OPENROUTER_API_KEY'),
-            'model' => 'model-name',
-        ],
-    ],
-];
+`composer require x-orion-mg/my-ai-lib`
 
 Puis :
 
-$config = ConfigLoader::fromFile(
-    __DIR__ . '/config/ai.php'
-);
+`composer install`
 
-Ne commitez jamais vos clés API dans Git.
+-----------------
 
-🌐 Abstraction HTTP
-Les providers ne sont pas obligés de gérer directement les requêtes HTTP.
+## Utilisation rapide
 
-My AI Lib fournit :
+La classe MyAI constitue le point d'entrée simplifié de la librairie.
 
-HttpClientInterface
+L'utilisateur n'a normalement pas besoin de créer manuellement :
 
-avec une implémentation cURL :
+* `ProviderRegistry`
+* `ProviderFactory`
+* `ConfigLoader`
+* `FileSessionStore`
 
-CurlHttpClient
+pour une utilisation classique.
 
-Cela permet notamment d'utiliser un client HTTP différent ou un fake client dans les tests.
-
-Architecture :
-
-Provider
-    │
-    ▼
-HttpClientInterface
-    │
-    ├── CurlHttpClient
-    └── FakeHttpClient
-
-Cette séparation permet de tester les providers sans effectuer de véritables appels réseau.
-
-🧩 Ajouter un nouveau provider
-L'un des objectifs principaux de My AI Lib est de permettre l'ajout de providers sans modifier le cœur de la librairie.
-
-Supposons que nous voulions ajouter :
-
-MyProvider
-
-Créer :
-
-src/MyAILib/Provider/MyProvider/
-└── MyProvider.php
-
-Puis implémenter :
-
+## Exemple minimal
+```php
 <?php
 
-declare(strict_types=1);
+require_once __DIR__ . '/vendor/autoload.php';
 
-namespace MyAILib\Provider\MyProvider;
+use MyAILib\MyAI;
 
-use MyAILib\Model\AIModel;
-use MyAILib\Provider\ProviderCapability;
-use MyAILib\Provider\ProviderInterface;
-use MyAILib\Request\AIRequest;
-use MyAILib\Response\AIResponse;
+$ai = MyAI::create([
+    'provider' => 'openrouter',
+    'api_key' => getenv('OPENROUTER_API_KEY'),
+    'model' => 'openai/gpt-5',
+]);
 
+$response = $ai->ask(
+    'Explique-moi simplement ce qu’est une API.'
+);
+
+echo $response->text();
+```
+
+La réponse est représentée par un objet `AIResponse`.
+
+------------
+
+# Configuration
+## Provider
+
+Le provider peut être sélectionné lors de la création :
+```php
+$ai = MyAI::create([
+    'provider' => 'openrouter',
+    'api_key' => getenv('OPENROUTER_API_KEY'),
+]);
+```
+Si aucun provider n'est spécifié, la librairie utilise le provider configuré par défaut.
+
+Exemple :
+```php
+$ai = MyAI::create([
+    'provider' => 'openrouter',
+]);
+```
+-------------------
+## API Key
+
+Il est recommandé de ne jamais écrire une clé API directement dans le code.
+
+Utilisez une variable d'environnement :
+
+`OPENROUTER_API_KEY=sk-or-xxxxxxxx`
+
+Puis :
+```php
+$ai = MyAI::create([
+    'provider' => 'openrouter',
+    'api_key' => getenv('OPENROUTER_API_KEY'),
+]);
+```
+Ne commitez jamais votre clé API dans Git.
+
+---------------
+
+## Sélection du modèle
+Un modèle peut être sélectionné directement :
+
+```php
+$ai = MyAI::create([
+    'provider' => 'openrouter',
+    'api_key' => getenv('OPENROUTER_API_KEY'),
+    'model' => 'openai/gpt-5',
+]);
+```
+Les options du provider peuvent également être configurées :
+
+```php
+$ai = MyAI::create([
+    'provider' => 'openrouter',
+    'api_key' => getenv('OPENROUTER_API_KEY'),
+    'model' => 'openai/gpt-5',
+    'temperature' => 0.7,
+    'max_tokens' => 500,
+]);
+```
+---------------
+
+## Fallback entre plusieurs modèles
+
+Il est possible de définir plusieurs modèles.
+
+Si le premier modèle ne peut pas répondre, le provider peut essayer le modèle suivant.
+
+```php
+$ai = MyAI::create([
+    'provider' => 'openrouter',
+    'api_key' => getenv('OPENROUTER_API_KEY'),
+
+    'models_list' => [
+        'openai/gpt-5',
+        'nvidia/nemotron-3-nano-30b-a3b:free',
+        'allenai/olmo-3.1-32b-think:free',
+    ],
+]);
+```
+
+L'ordre de la liste détermine l'ordre des tentatives.
+
+---
+
+## Envoyer une requête
+La méthode principale est :
+```php
+$response = $ai->ask(
+    'Bonjour, explique-moi ce qu’est une API.'
+);
+```
+Le résultat est un AIResponse.
+
+Pour récupérer le texte :
+```php
+echo $response->text();
+```
+
+---
+
+# Informations de la réponse
+Une réponse contient plusieurs informations utiles.
+
+## Provider utilisé
+```php
+$response->provider();
+```
+Exemple :
+
+`openrouter`
+
+## Modèle utilisé
+```php
+$response->model();
+```
+Exemple :
+
+`openai/gpt-5`
+
+## Finish reason
+```php
+$response->finishReason();
+```
+
+Cette information permet de connaître la raison pour laquelle le provider a terminé la génération.
+
+Exemple :
+
+`stop`
+
+## Usage
+```php
+$response->usage();
+```
+Selon le provider, cette information peut notamment contenir le nombre de tokens utilisés.
+
+Exemple :
+```php
+print_r(
+    $response->usage()
+);
+```
+
+## Métadonnées
+Les métadonnées permettent de conserver les informations supplémentaires fournies par le provider.
+
+```php
+$response->metadata();
+```
+
+Exemple :
+```php
+print_r(
+    $response->metadata()
+);
+```
+---
+
+# Sessions et conversations
+My AI Lib possède un système de sessions permettant de conserver l'historique d'une conversation.
+
+Une session représente une conversation indépendante.
+
+```
+Session
+├── message utilisateur
+├── réponse IA
+├── message utilisateur
+├── réponse IA
+└── ...
+```
+----
+
+# Démarrer une session
+```php
+$ai->session(
+    'conversation-123'
+);
+```
+Si la session existe déjà, elle peut être rechargée.
+
+Si elle n'existe pas, elle est créée.
+
+---
+
+# System Prompt
+
+Un system prompt peut être associé à la conversation :
+
+```php
+$ai
+    ->session('conversation-123')
+    ->setSystemPrompt(
+        'Tu es un assistant français. Réponds clairement.'
+    );
+```
+Puis :
+```php
+$response = $ai->ask(
+    'Bonjour'
+);
+```
+Le system prompt est conservé avec la session.
+
+---
+
+# Conversations persistantes
+
+La librairie peut utiliser FileSessionStore pour conserver les conversations sur disque.
+
+Par défaut, les sessions sont stockées dans :
+```
+storage/sessions/
+```
+Chaque conversation est persistée sous forme de fichier JSON.
+
+Exemple conceptuel :
+```
+storage/
+└── sessions/
+    ├── 8f7c....json
+    ├── 2a91....json
+    └── ...
+```
+L'identifiant de session n'est pas directement utilisé comme nom de fichier. Il est hashé afin d'éviter notamment les problèmes liés aux caractères spéciaux ou au path traversal.
+
+---
+# Reprendre une conversation
+Une conversation peut être reprise ultérieurement avec le même identifiant :
+
+```php
+$ai->session(
+    'conversation-123'
+);
+
+$response = $ai->ask(
+    'Peux-tu continuer notre conversation ?'
+);
+```
+---
+
+# La session existante est chargée automatiquement.
+
+Historique d'une conversation
+L'historique de la session peut être récupéré avec :
+```php
+$history = $ai->history();
+```
+
+Puis :
+```php
+foreach ($history as $message) {
+    echo $message->role()->value;
+    echo ': ';
+    echo $message->content();
+}
+```
+Les messages possèdent notamment :
+```php
+$message->role();
+$message->content();
+```
+Les rôles utilisés sont notamment :
+```
+system
+user
+assistant
+```
+
+---
+# Sessions en mémoire
+Pour les tests ou les utilisations temporaires, MemorySessionStore permet de conserver les sessions uniquement en mémoire.
+```php
+$store = new MemorySessionStore();
+```
+
+Ce stockage est particulièrement adapté aux tests automatisés.
+
+Les données sont perdues lorsque le processus PHP se termine.
+
+---
+
+# Architecture
+L'architecture interne est volontairement séparée en plusieurs composants.
+```
+MyAI
+ │
+ ▼
+AIManager
+ │
+ ├── ProviderFactory
+ │      │
+ │      └── ProviderRegistry
+ │
+ ├── SessionStore
+ │
+ └── Provider
+        │
+        ▼
+   API du provider
+```
+---
+# MyAI
+MyAI est la façade simplifiée destinée à l'utilisateur final.
+
+Exemple :
+```php
+$ai = MyAI::create([
+    'provider' => 'openrouter',
+    'api_key' => getenv('OPENROUTER_API_KEY'),
+]);
+```
+Elle évite à l'utilisateur de devoir construire manuellement toute l'infrastructure.
+
+---
+# AIManager
+AIManager constitue le gestionnaire principal des interactions avec un provider.
+
+Il gère notamment :
+
+* l'envoi des requêtes ;
+* les sessions ;
+* le contexte de conversation ;
+* le system prompt ;
+* la mise à jour de l'historique.
+Les utilisateurs avancés peuvent accéder au manager :
+```php
+$manager = $ai->manager();
+```
+---
+# ProviderInterface
+Tous les providers doivent implémenter :
+```
+ProviderInterface
+```
+
+Cela permet à la librairie d'utiliser différents providers derrière une interface commune.
+
+L'objectif est de pouvoir passer de :
+
+`OpenRouter`
+
+à :
+```
+OpenAI
+Anthropic
+Google
+Mistral
+...
+```
+sans modifier le fonctionnement général de l'application.
+
+---
+# ProviderRegistry
+
+Le ProviderRegistry associe un identifiant à une classe de provider.
+
+Exemple :
+```php
+$registry->register(
+    'openrouter',
+    OpenRouterProvider::class
+);
+```
+
+Le registry permet de retrouver les providers disponibles.
+
+---
+# ProviderFactory
+ProviderFactory est responsable de créer une instance configurée d'un provider.
+```php
+$provider = $factory->create(
+    'openrouter'
+);
+```
+Il permet également de gérer la configuration du provider et les options spécifiques.
+
+---
+
+# Ajouter un nouveau provider
+L'architecture est conçue pour permettre l'ajout de nouveaux providers.
+
+Un provider doit implémenter :
+
+`ProviderInterface`
+
+Exemple conceptuel :
+```php
 final class MyProvider implements ProviderInterface
 {
-    public function ask(
-        AIRequest $request
-    ): AIResponse {
-        // Appel API du provider
-    }
-
-    public function configure(
-        array $options
-    ): void {
+    public function configure(array $options): void
+    {
         // Configuration
     }
 
-    public function getName(): string
+    public function ask(AIRequest $request): AIResponse
     {
-        return 'My Provider';
-    }
-
-    public function getSlug(): string
-    {
-        return 'my-provider';
-    }
-
-    public function supports(
-        ProviderCapability $capability
-    ): bool {
-        return match ($capability) {
-            ProviderCapability::CHAT => true,
-            default => false,
-        };
-    }
-
-    /**
-     * @return AIModel[]
-     */
-    public function getModels(): array
-    {
-        return [
-            new AIModel(
-                id: 'my-model',
-                name: 'My Model',
-                capabilities: [
-                    ProviderCapability::CHAT->value,
-                ]
-            ),
-        ];
+        // Appel de l'API
     }
 }
-
-Puis l'enregistrer :
-
+```
+Il peut ensuite être enregistré dans le registry :
+```php
 $registry->register(
     'my-provider',
     MyProvider::class
 );
+```
+L'objectif à terme est de permettre l'installation de providers supplémentaires sans modifier le cœur de My AI Lib.
 
-Et l'utiliser :
+---
+# Agents
+Les agents ne sont pas des providers.
 
-$ai = AIManager::create(
-    'my-provider',
-    $factory
-);
+Un agent utilise les fonctionnalités de My AI Lib pour réaliser une tâche spécifique.
 
-$response = $ai->ask(
-    'Bonjour'
-);
+Les classes génériques liées aux agents appartiennent à la librairie :
+```
+src/MyAILib/Agent/
+├── AgentInterface.php
+└── AbstractAgent.php
+```
+En revanche, les agents concrets appartiennent à l'application qui utilise la librairie.
 
-Le code métier n'a pas besoin de changer.
+Exemple :
+```
+examples/
+└── Agent/
+    └── RecipeAgent.php
+```
+Exemple d'agent
+```php
+<?php
 
-🏗️ Architecture
-La structure actuelle du projet est organisée autour de plusieurs responsabilités :
+declare(strict_types=1);
 
-src/MyAILib/
-│
-├── AI/
-│   ├── AIInterface.php
-│   └── AIManager.php
-│
-├── Catalog/
-│   └── AICatalog.php
-│
-├── Config/
-│   ├── AIConfig.php
-│   └── ConfigLoader.php
-│
-├── Exception/
-│
-├── Http/
-│   ├── CurlHttpClient.php
-│   ├── HttpClientInterface.php
-│   └── HttpResponse.php
-│
-├── Message/
-│
-├── Model/
-│   └── AIModel.php
-│
-├── Options/
-│
-├── Provider/
-│   ├── OpenAI/
-│   ├── OpenRouter/
-│   ├── ProviderCapability.php
-│   ├── ProviderFactory.php
-│   ├── ProviderInterface.php
-│   └── ProviderRegistry.php
-│
-├── Request/
-│   └── AIRequest.php
-│
-├── Response/
-│   └── AIResponse.php
-│
-└── Session/
+namespace MyAILib\Examples\Agent;
 
-Cette organisation sépare volontairement le cœur de la librairie des implémentations spécifiques aux fournisseurs.
+use MyAILib\Agent\AbstractAgent;
 
-🧠 Principe architectural
-Le principe central est :
-
-                  Application
-                       │
-                       ▼
-                   AIManager
-                       │
-                       ▼
-                ProviderInterface
-                       │
-          ┌────────────┼────────────┐
-          ▼            ▼            ▼
-       OpenAI      OpenRouter     Future...
-          │            │
-          └──────┬─────┘
-                 ▼
-        HttpClientInterface
-                 │
-                 ▼
-            HTTP Client
-
-Le code métier dépend de l'abstraction :
-
-AIInterface
-ProviderInterface
-AIRequest
-AIResponse
-
-et non d'une API spécifique.
-
-🤖 Préparer les futurs agents
-My AI Lib n'est pas un framework d'agents.
-
-C'est volontaire.
-
-La librairie fournit la couche d'infrastructure permettant ensuite de construire des agents au-dessus.
-
-Par exemple :
-
-Application
-     │
-     ▼
-   Agent
-     │
-     ▼
- My AI Lib
-     │
-     ├── AIManager
-     ├── ProviderFactory
-     ├── ProviderRegistry
-     ├── AIRequest
-     ├── AIResponse
-     ├── Sessions
-     └── Providers
-
-Un futur agent pourra ainsi être spécialisé :
-
-RecipeAgent
-SupportAgent
-CodingAgent
-ResearchAgent
-AutomationAgent
-...
-
-et utiliser My AI Lib sans connaître directement OpenAI, OpenRouter ou un autre fournisseur.
-
-Exemple conceptuel :
-
-final class RecipeAgent
+final class RecipeAgent extends AbstractAgent
 {
-    public function __construct(
-        private readonly AIInterface $ai
-    ) {
+    public function name(): string
+    {
+        return 'recipe-agent';
     }
 
-    public function run(string $recipe): AIResponse
+    public function instructions(): string
     {
-        return $this->ai->ask(
-            "Analyse cette recette : {$recipe}"
-        );
+        return <<<PROMPT
+Tu es un assistant spécialisé dans les recettes de cuisine.
+
+Tu dois :
+- proposer des recettes adaptées ;
+- donner les ingrédients ;
+- expliquer les étapes ;
+- répondre en français.
+PROMPT;
+    }
+
+    public function run(string $input): string
+    {
+        return $this->ask($input);
     }
 }
+```
+Puis :
+```php
+$agent = new RecipeAgent($ai);
 
-L'agent dépend alors de :
+$response = $agent->run(
+    'Donne-moi une recette avec des tomates et des œufs.'
+);
 
-AIInterface
+echo $response;
+```
+L'agent utilise donc AIManager et les fonctionnalités de My AI Lib, mais sa logique métier reste dans l'application.
 
-et non de :
+---
 
-OpenAIProvider
+# Organisation recommandée d'une application
+Une application utilisant My AI Lib peut avoir une structure comme :
+```
+my-project/
+├── src/
+│   ├── Agent/
+│   │   ├── RecipeAgent.php
+│   │   └── SupportAgent.php
+│   │
+│   └── Tools/
+│
+├── storage/
+│   └── sessions/
+│
+├── config/
+│
+├── public/
+│
+├── vendor/
+│
+└── composer.json
+```
 
-C'est une séparation importante pour construire des agents interchangeables.
+My AI Lib reste une dépendance :
+```
+vendor/
+└── x-orion-mg/
+    └── my-ai-lib/
+``` 
+---
+# Sécurité
+Ne mettez jamais une clé API directement dans le dépôt Git.
 
-🧪 Tests
+À éviter :
+```php
+'api_key' => 'sk-or-xxxxxxxx'
+```
+Préférez :
+```php
+'api_key' => getenv('OPENROUTER_API_KEY')
+```
+
+Ajoutez également les fichiers de stockage local au .gitignore :
+```
+/vendor/
+/storage/sessions/
+/.env
+```
+---
+# Tests
 Le projet utilise PHPUnit.
 
-Lancer les tests :
-
+Pour lancer les tests :
+```
 composer test
+```
+Les tests couvrent notamment :
 
-Ou directement :
+* les providers ;
+* les requêtes ;
+* les réponses ;
+* les sessions ;
+* la persistance ;
+* le registry ;
+* la factory ;
+* la configuration ;
+* le AIManager ;
+* le fallback entre modèles.
 
-vendor/bin/phpunit
+---
 
-Les providers peuvent être testés avec un client HTTP fake afin de ne pas dépendre d'un service externe.
+# État actuel
+Les fonctionnalités principales actuellement mises en place sont :
 
-🔐 Sécurité
-Ne stockez jamais les clés API dans le code source.
+1. [x]  architecture des providers ;
+2. [x]  ProviderInterface ;
+3. [x]  ProviderRegistry ;
+4. [x]  ProviderFactory ;
+5. [x]  configuration ;
+6. [x]  HTTP client ;
+7. [x]  AIRequest ;
+8. [x]  AIResponse ;
+9. [x]  provider OpenRouter ;
+10. [x]  fallback entre modèles ;
+11. [x]  température et max_tokens ;
+12. [x]  finish_reason ;
+13. [x]  sessions ;
+14. [x]  AISession ;
+15. [x]  MemorySessionStore ;
+16. [x]  FileSessionStore ;
+17. [x]  persistance des conversations ;
+18. [x]  system prompt ;
+19. [x]  historique d'une conversation ;
+20. [x]  sélection du provider par défaut ;
+21. [x]  AgentInterface ;
+22. [x]  AbstractAgent ;
+23. [x]  façade MyAI ;
+24. [x]  exemple RecipeAgent.
 
-Utilisez des variables d'environnement :
+---
 
-OPENAI_API_KEY=...
-OPENROUTER_API_KEY=...
+# Roadmap
+Les prochaines évolutions prévues sont notamment :
 
-Et assurez-vous que les fichiers contenant des secrets sont exclus de Git.
+1. améliorer l'API publique de MyAI ;
+2. finaliser la récupération de l'historique de toutes les conversations ;
+3. exposer proprement les métadonnées des réponses ;
+4. améliorer la gestion des modèles et providers ;
+5. permettre l'ajout de providers externes plus facilement ;
+6. développer le système d'agents ;
+7. ajouter un système de Tools ;
+8. permettre aux agents d'utiliser plusieurs outils ;
+9. améliorer la gestion du contexte ;
+10. préparer une architecture adaptée aux applications IA plus complexes.
 
-📋 État du projet
-Core
- Abstraction AI
- AIManager
- AIRequest
- AIResponse
- Messages
- Sessions
- System prompt
- Generation options
- Provider interface
- Provider registry
- Provider factory
- Provider capabilities
- AI models
- AI catalog
- Configuration
- HTTP abstraction
- Gestion des erreurs providers
-Providers
- OpenAI
- OpenRouter
-À venir
- Streaming
- Structured output / JSON
- Tool calling
- Vision / multimodalisation avancée
- Sélection automatique du provider/modèle
- Nouveaux providers
- Framework d'agents
-🛣️ Philosophie du projet
+La persistance par base de données n'est volontairement pas incluse dans le cœur de My AI Lib.
+
+Une application ou un agent pourra plus tard implémenter son propre stockage, par exemple avec :
+```
+My AI Lib
+    │
+    └── SessionStoreInterface
+             │
+             ├── MemorySessionStore
+             ├── FileSessionStore
+             └── DatabaseSessionStore (application)
+```
+
+Cela permet de garder la librairie indépendante d'une base de données particulière.
+***
+
+# Philosophie du projet
 My AI Lib cherche à respecter trois principes :
 
-1. Un code métier indépendant du provider
-$ai->ask(...);
+## Simple à utiliser
+Une utilisation classique doit pouvoir commencer avec :
+```php
+$ai = MyAI::create([
+    'provider' => 'openrouter',
+    'api_key' => getenv('OPENROUTER_API_KEY'),
+]);
 
-doit rester la principale interaction avec l'IA.
+$response = $ai->ask('Bonjour');
+```
+## Extensible
+Les providers, sessions et composants internes doivent pouvoir être remplacés ou étendus.
 
-2. Les providers sont interchangeables
-Ajouter ou remplacer un provider ne doit pas nécessiter de réécrire les agents ou le code métier.
+## Indépendant
+Le code métier d'une application ne doit pas être fortement dépendant d'un provider particulier.
 
-3. Le cœur ne doit pas connaître les API propriétaires
-Les différences entre les APIs sont encapsulées dans les providers.
-
-📄 Licence
-My AI Lib est distribué sous licence MIT.
-
+L'application doit pouvoir utiliser :
+```
+OpenRouter
+    ↓
+My AI Lib
+    ↓
+Application
+```
+sans que toute l'application soit construite directement autour de l'API OpenRouter.
+***
+# Licence
 Voir le fichier LICENSE.
 
-👤 Auteur
-Projet personnel développé par x-orion-mg.
-
-Repository :
-
-https://github.com/x-orion-mg/my-ia-lib-2
-
-
-### Une remarque importante avant de le mettre
-
-J'ai volontairement **corrigé un point par rapport à notre discussion précédente** : je n'ai pas présenté les agents, le streaming ou le tool calling comme déjà disponibles. Le dépôt contient actuellement les briques `AI`, `Catalog`, `Config`, `Http`, `Model`, `Options`, `Provider`, `Request`, `Response` et `Session`, avec OpenAI et OpenRouter comme providers visibles. 
-G
-GitHub
-+1
-
-
-
-Il y a également un point que je voudrais **corriger avant qu'on considère la librairie comme "finalisée"** : ton `OpenRouterProvider` et ton `OpenAIProvider` utilisent actuellement `HttpClientInterface`, ce qui est très bien, mais leurs implémentations doivent rester parfaitement alignées avec l'interface HTTP actuelle. Le dépôt montre notamment l'usage d'une méthode `post()`, donc je ne veux surtout pas qu'on continue à ajouter des couches théoriques sans vérifier la cohérence complète des contrats. 
-G
-GitHub
-+1
-
-
-
-Et surtout : **je pense qu'on devrait maintenant arrêter d'ajouter des fonctionna
+Cette version documente **ce qu'on a réellement construit** et garde la distinction importante entre **la librairie** et les **agents concrets de l'application**.

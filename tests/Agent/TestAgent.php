@@ -19,4 +19,9 @@ final class TestAgent extends AbstractAgent
             'Réponds simplement à cette demande : ' . $input
         );
     }
+
+    public function instructions(): string
+    {
+        return '';
+    }
 }
